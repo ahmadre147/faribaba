@@ -26,7 +26,7 @@ public class Main {
                     login();
                     break;
                 case 3:
-                    defineTicket();
+                    defineFlight();
                     break;
                 case 4:
                     break;
@@ -49,7 +49,7 @@ public class Main {
                     showProfile(currentUser);
                     break;
                 case 2:
-                    buyTicket();
+                    buyTicket(currentUser);
                     break;
                 case 3:
                     showUserTickets(currentUser);
@@ -66,6 +66,34 @@ public class Main {
     }
 
     private static void walletConfig(User currentUser) {
+        System.out.println("Select between following operations: ");
+        System.out.println("1. Show balance: ");
+        System.out.println("2. Recharge and top up");
+        System.out.println("3. Go back");
+
+        int choice = in.nextInt();
+        in.nextLine();
+
+        switch (choice){
+            case 1:
+                System.out.println("Your balance is: " + currentUser.myWallet().getBalance() + "  IRR");
+                break;
+            case 2:
+                rechargeWallet(currentUser);
+                break;
+            case 3:
+                break;
+            default:
+                System.out.println("This option does not exist. Please try again.");
+        }
+    }
+
+    private static void rechargeWallet(User currentUser) {
+        System.out.print("Enter the additional amount (IRR): ");
+        int add = in.nextInt();
+        in.nextLine();
+
+        currentUser.myWallet().addBalance(add);
     }
 
     private static void showUserTickets(User currentUser) {
@@ -74,7 +102,7 @@ public class Main {
         }
     }
 
-    private static void buyTicket() {
+    private static void buyTicket(User currentUser) {
         Ticket ticket = new Ticket();
         in.nextLine();
         System.out.print("Please set your departure date (DD/MM/YYYY): ");
@@ -89,27 +117,44 @@ public class Main {
         ticket.setDestination(in.nextLine());
 
         Ticket selectedTicket = searchTickets(ticket);
+        if (selectedTicket == null){
+            System.out.println("\nNo tickets found!");
+            return;
+        }
+        if (currentUser.myWallet().getBalance() >= selectedTicket.calculatePrice()){
+            currentUser.addTicket(selectedTicket);
+            currentUser.myWallet().addBalance(-selectedTicket.calculatePrice());
+            System.out.println("Purchase successful.");
+        } else {
+            System.out.println("Insufficient balance!");
+        }
+
     }
 
     private static Ticket searchTickets(Ticket ticket) {
         ArrayList<Ticket> foundTickets = new ArrayList<>();
+
         for (Ticket existingTicket : ticketData){
             if (ticket.getDate().equals(existingTicket.getDate()) && ticket.getSource().equals(existingTicket.getSource()) && ticket.getDestination().equals(existingTicket.getDestination())){
                 existingTicket.setTravelClass(ticket.getTravelClass());
                 foundTickets.add(existingTicket);
-                System.out.println((foundTickets.indexOf(existingTicket)+1) + ":");
+                System.out.print((foundTickets.indexOf(existingTicket)+1) + ":");
                 showTicket(existingTicket);
             }
         }
-        System.out.println("Select index of the Ticket you want to buy: ");
-        int ticketChoice = in.nextInt();
-        in.nextLine();
 
-        return foundTickets.get(ticketChoice-1);
+        if (foundTickets.size()>0){
+            System.out.print("Select index of the Ticket you want to buy: ");
+            int ticketChoice = in.nextInt();
+            in.nextLine();
+            return foundTickets.get(ticketChoice - 1);
+        }
+        return null;
     }
 
     private static void showTicket(Ticket existingTicket) {
-        System.out.println("\nFrom: " + existingTicket.getSource());
+        System.out.println("\nFlight ID: " + existingTicket.getId());
+        System.out.println("From: " + existingTicket.getSource());
         System.out.println("To :" + existingTicket.getDestination());
         System.out.println("Date: " + existingTicket.getDate());
         System.out.println("Price: " +  existingTicket.calculatePrice());
@@ -117,6 +162,7 @@ public class Main {
     }
 
     private static void showProfile(User currentUser) {
+        System.out.println("\n******** Profile ********\n");
         System.out.println("Username: " +  currentUser.getUsername());
         System.out.println("Name: " +  currentUser.getFullName());
         System.out.println("ID number: " +  currentUser.getId());
@@ -135,14 +181,14 @@ public class Main {
         System.out.print("Enter Phone Number: ");
         String phone = in.nextLine();
 
-        userData.add(new User(username, password, fullName, id, phone));
+        userData.add(new User(username, password, fullName, id, phone, new Wallet(0)));
     }
 
-    public static void defineTicket(){
+    public static void defineFlight(){
         System.out.print("Enter flight ID: ");
         String id = in.nextLine();
         
-        System.out.print("Enter flight base price (thousand Tomans): ");
+        System.out.print("Enter flight base price (IRR): ");
         int basePrice = in.nextInt();
         in.nextLine();
         
@@ -169,12 +215,16 @@ public class Main {
         while (mode == null){
             System.out.print("Is your flight International(I) or Domestic(D)? (D/I): ");
             String modeStr = in.nextLine();
-            if (modeStr.strip().equals("D")) {
-                mode = Ticket.FlightMode.DOMESTIC;
-            } else if (modeStr.strip().equals("I")) {
-                mode = Ticket.FlightMode.INTERNATIONAL;
-            } else {
-                System.out.println("Invalid entry. Please try again.");
+            switch (modeStr.strip()){
+                case "D":
+                    mode = Ticket.FlightMode.DOMESTIC;
+                    break;
+                case "I":
+                    mode = Ticket.FlightMode.INTERNATIONAL;
+                    break;
+                default:
+                    System.out.println("Invalid entry. Please try again.");
+                    break;
             }
         }
         return mode;
@@ -185,14 +235,19 @@ public class Main {
         while (travelClass == null) {
             System.out.print("Is your flight class First, Business or Economy? (F/B/E): ");
             String classStr = in.nextLine();
-            if (classStr.strip().equals("F")) {
-                travelClass = Ticket.TravelClass.FIRST;
-            } else if (classStr.strip().equals("B")) {
-                travelClass = Ticket.TravelClass.BUSINESS;
-            } else if (classStr.strip().equals("E")) {
-                travelClass = Ticket.TravelClass.ECONOMY;
-            } else {
-                System.out.println("Invalid entry. Please try again.");
+            switch (classStr.strip()) {
+                case "F":
+                    travelClass = Ticket.TravelClass.FIRST;
+                    break;
+                case "B":
+                    travelClass = Ticket.TravelClass.BUSINESS;
+                    break;
+                case "E":
+                    travelClass = Ticket.TravelClass.ECONOMY;
+                    break;
+                default:
+                    System.out.println("Invalid entry. Please try again.");
+                    break;
             }
         }
         return travelClass;
@@ -235,9 +290,9 @@ public class Main {
 
     public static void printDefaultMenu() {
         System.out.println("\n******************************");
-        System.out.println("1-Define a new user");
+        System.out.println("1-Sign Up");
         System.out.println("2-Login user");
-        System.out.println("3-Define a new ticket");
+        System.out.println("3-Define a new flight");
         System.out.println("4-Exit the program");
         System.out.println("******************************");
         System.out.print("\r\nPlease select your choice: ");

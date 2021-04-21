@@ -16,12 +16,15 @@ public class User {
 
     private ArrayList<Ticket> tickets = new ArrayList<>();
 
-    public User(String username, String password, String fullName, String id, String phone) {
+    private Wallet wallet;
+
+    public User(String username, String password, String fullName, String id, String phone, Wallet wallet) {
         this.username = username;
         this.password = password;
         this.fullName = fullName;
         this.id = id;
         this.phone = phone;
+        this.wallet = wallet;
     }
 
     public String getUsername() {
@@ -75,4 +78,13 @@ public class User {
     public void removeTicket(Ticket ticket) {
         tickets.remove(ticket);
     }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
+
+    public Wallet myWallet(){
+        return wallet;
+    }
+
 }

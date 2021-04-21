@@ -130,6 +130,6 @@ public class Ticket {
     }
 
     public double calculatePrice(){
-        return basePrice*(1 + travelClass.additionalPercentage/100);
+        return mode.equals(FlightMode.INTERNATIONAL) ? basePrice*(1 + travelClass.additionalPercentage/100) : basePrice;
     }
 }

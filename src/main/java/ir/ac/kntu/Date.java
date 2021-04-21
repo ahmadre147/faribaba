@@ -16,16 +16,17 @@ public class Date {
         }
     }
 
-    public Date(String strDate){
-        String[] splitDate = strDate.split("/");
-        for (int i=0;i<splitDate.length;i++){
-            splitDate[i] = splitDate[i].strip();
-        }
-        int day = Integer.parseInt(splitDate[0]);
-        int month = Integer.parseInt(splitDate[1]);
-        int year = Integer.parseInt(splitDate[2]);
+    public Date(String formattedDate){
+        String[] splitDate = formattedDate.split("/");
+        int day = Integer.parseInt(splitDate[0].strip());
+        int month = Integer.parseInt(splitDate[1].strip());
+        int year = Integer.parseInt(splitDate[2].strip());
 
-        new Date(day, month, year);
+        if (checkDate(day, month, year)){
+            this.day = day;
+            this.month = month;
+            this.year = year;
+        }
     }
 
     private boolean checkDate(int day, int month, int year){
@@ -42,6 +43,10 @@ public class Date {
 
     public int getYear() {
         return year;
+    }
+
+    public boolean equals(Date date) {
+        return (date.getDay()==day) && (date.getMonth()==month) && (date.getYear()==year);
     }
 
     @Override
