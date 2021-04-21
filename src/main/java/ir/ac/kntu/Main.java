@@ -138,7 +138,7 @@ public class Main {
             if (ticket.getDate().equals(existingTicket.getDate()) && ticket.getSource().equals(existingTicket.getSource()) && ticket.getDestination().equals(existingTicket.getDestination())){
                 existingTicket.setTravelClass(ticket.getTravelClass());
                 foundTickets.add(existingTicket);
-                System.out.print((foundTickets.indexOf(existingTicket)+1) + ":");
+                System.out.print("\n"+ (foundTickets.indexOf(existingTicket)+1) + ":");
                 showTicket(existingTicket);
             }
         }
@@ -205,7 +205,10 @@ public class Main {
         Ticket.FlightMode mode = initFlightMode();
 
         Ticket ticket = new Ticket(id, basePrice, date, source, destination, mode);
-        Ticket.TravelClass.setAdditionalPercentage(in);
+
+        if (mode.equals(Ticket.FlightMode.INTERNATIONAL)){
+            Ticket.TravelClass.setAdditionalPercentage(in);
+        }
 
         ticketData.add(ticket);
     }
